@@ -1,54 +1,90 @@
 #!/usr/bin/python3
 """
-N queens solution finder
+nqueens
 """
-
 import sys
 
-if len(sys.argv) != 2:
-    print('Usage: nqueens N')
-    sys.exit(1)
 
-try:
-    n = int(sys.argv[1])
-except ValueError:
-    print('N must be a number')
-    sys.exit(1)
+def is_safe(board, row, col, N):
+    """
+    Check if it's safe to place a queen at a given position on the board.
 
-if n < 4:
-    print('N must be at least 4')
-    sys.exit(1)
+    Args:
+        board (list): The chessboard.
+        row (int): The row to check.
+        col (int): The column to check.
+        N (int): The size of the board.
 
-
-def solve_nqueens(x):
-    '''self descriptive'''
-    if x == 0:
-        return [[]]
-    inner_solution = solve_nqueens(x - 1)
-    return [solution + [(x, i + 1)]
-            for i in range(n)
-            for solution in inner_solution
-            if safe_queen((x, i + 1), solution)]
-
-
-def attack_queen(square, queen):
-    '''Checks if the positions of two queens are in an attacking mode.'''
-    (row, col) = square
-    (row, col) = queen
-    return (row == row) or (col == col) or\
-        abs(row - row) == abs(col - col)
-
-
-def safe_queen(sqr, queens):
-    '''self descriptive'''
-    for queen in queens:
-        if attack_queen(sqr, queen):
+    Returns:
+        bool: True if safe, False otherwise.
+    """
+    # Check the row on the left side
+    for i in range(col):
+        if board[row][i] == 1:
             return False
+
+    # Check upper diagonal on the left side
+    for i, j in zip(range(row, -1, -1), range(col, -1, -1)):
+        if board[i][j] == 1:
+            return False
+
+    # Check lower diagonal on the left side
+    for i, j in zip(range(row, N, 1), range(col, -1, -1)):
+        if board[i][j] == 1:
+            return False
+
     return True
 
 
-for answer in reversed(solve_nqueens(n_q)):
-    result = []
-    for p in [list(p) for p in answer]:
-        result.append([i - 1 for i in p])
-    print(result)
+def solve_nqueens(N):
+    """
+    Solve the N queens problem and print the
+    solutions.
+
+    Args:
+        N (int): The size of the chessboard.
+    """
+    if not isinstance(N, int):
+        print("N must be a number")
+        sys.exit(1)
+
+    if N < 4:
+        print("N must be at least 4")
+        sys.exit(1)
+
+    board = [[0 for _ in range(N)] for _ in range(N)]
+
+    def format_solution(board):
+        solution = []
+        for row in board:
+            queen_col = row.index(1)
+            solution.append([board.index(row), queen_col])
+        return solution
+
+    def solve(board, col):
+        if col >= N:
+            solution = format_solution(board)
+            print(solution)
+            return
+
+        for i in range(N):
+            if is_safe(board, i, col, N):
+                board[i][col] = 1
+                solve(board, col + 1)
+                board[i][col] = 0
+
+    solve(board, 0)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: nqueens N")
+        sys.exit(1)
+
+    try:
+        N = int(sys.argv[1])
+    except ValueError:
+        print("N must be a number")
+        sys.exit(1)
+
+    solve_nqueens(N)
